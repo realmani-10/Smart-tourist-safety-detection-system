@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { QrCode, MapPin, Phone, Shield, AlertTriangle, Globe, Battery, Wifi, Signal } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import LiveLocationMap from './LiveLocationMap';
 
 interface MobileAppProps {
   onPanicTrigger: () => void;
@@ -12,6 +13,7 @@ const MobileApp: React.FC<MobileAppProps> = ({ onPanicTrigger }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isEmergencyActive, setIsEmergencyActive] = useState(false);
   const [callInitiated, setCallInitiated] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -127,14 +129,33 @@ const MobileApp: React.FC<MobileAppProps> = ({ onPanicTrigger }) => {
           </div>
         </div>
 
+        {/* Live Location Map */}
+        <div className="mb-6">
+          <LiveLocationMap
+            userLocation={userLocation || undefined}
+            onLocationUpdate={(location) => setUserLocation(location)}
+          />
+        </div>
+
         {/* Current Location & Alert */}
         <div className="bg-green-500/20 border border-green-500/30 rounded-xl p-4 mb-6">
           <div className="flex items-center gap-2 mb-2">
             <MapPin className="w-5 h-5 text-green-400" />
             <span className="text-sm font-medium">{t.currentArea}</span>
           </div>
-          <p className="text-xs text-green-200">{t.indiaGate}, {t.newDelhi} - {t.lowRiskArea}</p>
-          <p className="text-xs text-gray-300 mt-1">{t.lastUpdate}: {currentTime.toLocaleTimeString()}</p>
+          {userLocation ? (
+            <>
+              <p className="text-xs text-green-200">
+                Lat: {userLocation.lat.toFixed(4)}, Lng: {userLocation.lng.toFixed(4)}
+              </p>
+              <p className="text-xs text-gray-300 mt-1">{t.lastUpdate}: {currentTime.toLocaleTimeString()}</p>
+            </>
+          ) : (
+            <>
+              <p className="text-xs text-green-200">{t.indiaGate}, {t.newDelhi} - {t.lowRiskArea}</p>
+              <p className="text-xs text-gray-300 mt-1">{t.lastUpdate}: {currentTime.toLocaleTimeString()}</p>
+            </>
+          )}
         </div>
 
         {/* Emergency Contacts */}
